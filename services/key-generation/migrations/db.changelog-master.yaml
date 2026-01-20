@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: initial
+      author: timeb
+      comment: first initial migration
+      changes:
+        - createTable:
+            tableName: keys
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: timestamp
+              - column:
+                  name: end_date
+                  type: timestamp
+              - column:
+                  name: key
+                  type: text
+                  constraints:
+                    nullable: false
+
+

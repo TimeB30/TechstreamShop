@@ -1,5 +1,5 @@
 env: "local" # local, dev, prod
-storage_url: "test_url"
+storage_url: "jdbc:postgresql://localhost:5430/techsream_keys_db"
 http_server:
   address: "localhost:8082"
   timeout: "4s"

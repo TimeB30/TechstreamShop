@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/timeb30/techstreamshop/services/key-generation/internal/config"
+	"github.com/timeb30/techstreamshop/services/key-generation/internal/storage/postgresql"
 )
 
 const (
@@ -25,7 +26,12 @@ func main() {
 	log := setupLogger(cfg.Env)
 	log.Info("Starting techstreamshop", slog.String("env", cfg.Env))
 	log.Debug("Debug messages are enabled")
-
+	storage, err := postgresql.New(cfg.StorageURL)
+	if err != nil {
+		log.Error("failed no init storage", "err", err)
+		os.Exit(1)
+	}
+	_ = storage
 }
 
 func setupLogger(env string) *slog.Logger {

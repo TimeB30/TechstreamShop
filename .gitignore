@@ -1,2 +1,8 @@
 *.idea
 *.env
+*.yaml
+*.yml
+
+
+!services/key-generation/migrations
+!services/key-generation/docker-compose.yml

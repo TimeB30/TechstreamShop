@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/timeb30/techstreamshop/services/telegram-bot/client/telegram"
 	"log"
 	"log/slog"
 	"os"
@@ -12,9 +13,13 @@ const (
 	envProd  = "prod"
 )
 
-func main() {
-	token := MustToken()
+const (
+	tgBotHost = "api.telegram.org"
+)
 
+func main() {
+	tgClient := telegram.New(tgBotHost, MustToken())
+	tgClient.Updates()
 	//logger := setupLogger()
 	// token = GetToken(token)
 	//tgClient = telegram.New(token)

@@ -34,13 +34,13 @@ func main() {
 	log.Debug("Debug messages are enabled")
 	storage, err := postgresql.New(cfg.StorageURL)
 	if err != nil {
-		log.Error("failed no init storage", "err", err)
+		log.Error("failed no init storage", "e", err)
 		os.Exit(1)
 	}
 	//_ = storage
-	//id, err := storage.SaveKey(1223, "test key", time.Now(), time.Now().Add(time.Hour))
-	//if err != nil {
-	//	log.Error("failed save key", "err", err)
+	//id, e := storage.SaveKey(1223, "test key", time.Now(), time.Now().Add(time.Hour))
+	//if e != nil {
+	//	log.Error("failed save key", "e", e)
 	//	os.Exit(1)
 	//}
 	//log.Info("saved key", slog.Int64("id", id))

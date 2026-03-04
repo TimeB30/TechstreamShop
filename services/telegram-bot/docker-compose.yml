@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: techstream_keys_postgres
+    container_name: users_postgres
     restart: unless-stopped
 
     environment:
@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     ports:
-      - "5430:5432"
+      - "5431:5432"
 
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -21,7 +21,7 @@ services:
       retries: 10
   liquibase:
     image: liquibase/liquibase:4.27
-    container_name: techstream_keys_liquibase
+    container_name: users_liquibase
     depends_on:
       postgres:
         condition: service_healthy

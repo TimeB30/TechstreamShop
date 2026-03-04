@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Storage struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
 func New(storagePath string) (*Storage, error) {
 	const op = "storage.postgresql.New"
-	db, err := pgx.Connect(context.Background(), storagePath)
+	db, err := pgxpool.New(context.Background(), storagePath)
 	if err != nil {
 		return nil, fmt.Errorf("db connection error %s %w", op, err)
 	}

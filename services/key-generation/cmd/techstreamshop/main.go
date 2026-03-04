@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/timeb30/techstreamshop/services/key-generation/internal/keygen"
 	"github.com/timeb30/techstreamshop/services/key-generation/internal/storage/postgresql"
 
 	"log/slog"
@@ -37,6 +38,7 @@ func main() {
 		log.Error("failed no init storage", "e", err)
 		os.Exit(1)
 	}
+	keyGen := keygen.NewKeyGen()
 	//_ = storage
 	//id, e := storage.SaveKey(1223, "test key", time.Now(), time.Now().Add(time.Hour))
 	//if e != nil {
@@ -49,7 +51,7 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
-	router.Post("/key", generate.New(log, storage))
+	router.Post("/key", generate.New(log, storage, keyGen))
 	log.Info("starting server", slog.String("address", cfg.Address))
 	srv := &http.Server{
 		Addr:         cfg.Address,

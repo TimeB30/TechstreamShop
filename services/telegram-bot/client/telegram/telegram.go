@@ -2,13 +2,14 @@ package telegram
 
 import (
 	"encoding/json"
-	"github.com/timeb30/techstreamshop/services/telegram-bot/lib/e"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"path"
 	"strconv"
+
+	"github.com/timeb30/techstreamshop/services/telegram-bot/lib/e"
 )
 
 type Client struct {
@@ -33,14 +34,25 @@ func New(host string, token string) Client {
 func newBasePath(token string) string {
 	return "bot" + token
 }
-func (c *Client) SendMessage(log *slog.Logger, chatID int64, message string) error {
+
+func (c *Client) SendMessage(log *slog.Logger, chatID int64, message string, inlineKeyboardMarkup InlineKeyboardMarkup) error {
 	op := "client.SendMessage"
 	log = log.With(
 		slog.String("op", op))
-	q := url.Values{}
-	q.Add("chat_id", strconv.FormatInt(chatID, 10))
-	q.Add("text", message)
-	_, err := c.doRequest(log, sendMessageMethod, q)
+	reqBody := Message{
+		ChatID:               chatID,
+		Text:                 message,
+		InlineKeyboardMarkUp: inlineKeyboardMarkup,
+	}
+
+	//q := url.Values{}
+	//q.Add("chat_id", strconv.FormatInt(chatID, 10))
+	//q.Add("text", message)
+	jsondata, err := json.Marshal(reqBody)
+	if err != nil {
+		return e.Wrap(op, err)
+	}
+	_, err := c.doRequest(log, sendMessageMethod)
 	if err != nil {
 		log.Error("can't send message", "chat_id", chatID)
 		return e.Wrap(op, err)
@@ -73,7 +85,7 @@ func (c *Client) Updates(log *slog.Logger, offset int64, limit int64) (updates [
 	return res.Result, nil
 }
 
-func (c *Client) doRequest(log *slog.Logger, method string, query url.Values) (data []byte, err error) {
+func (c *Client) doRequest(log *slog.Logger, method string) (data []byte, err error) {
 	defer func() {
 		err = e.WrapIfErr("can't do request", err)
 		if err != nil {

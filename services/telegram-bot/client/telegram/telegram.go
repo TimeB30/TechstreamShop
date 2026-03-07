@@ -1,13 +1,12 @@
 package telegram
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"path"
-	"strconv"
 
 	"github.com/timeb30/techstreamshop/services/telegram-bot/lib/e"
 )
@@ -35,46 +34,33 @@ func newBasePath(token string) string {
 	return "bot" + token
 }
 
-func (c *Client) SendMessage(log *slog.Logger, chatID int64, message string, inlineKeyboardMarkup InlineKeyboardMarkup) error {
+func (c *Client) SendMessage(chatID int64, message string, inlineKeyboardMarkup InlineKeyboardMarkup) error {
 	op := "client.SendMessage"
-	log = log.With(
-		slog.String("op", op))
 	reqBody := Message{
 		ChatID:               chatID,
 		Text:                 message,
 		InlineKeyboardMarkUp: inlineKeyboardMarkup,
 	}
-
-	//q := url.Values{}
-	//q.Add("chat_id", strconv.FormatInt(chatID, 10))
-	//q.Add("text", message)
-	jsondata, err := json.Marshal(reqBody)
+	_, err := c.doRequest(sendMessageMethod, reqBody)
 	if err != nil {
-		return e.Wrap(op, err)
-	}
-	_, err := c.doRequest(log, sendMessageMethod)
-	if err != nil {
-		log.Error("can't send message", "chat_id", chatID)
 		return e.Wrap(op, err)
 	}
 	return nil
 }
 
-func (c *Client) Updates(log *slog.Logger, offset int64, limit int64) (updates []Update, err error) {
+func (c *Client) Updates(offset int64, limit int64) (updates []Update, err error) {
+	const op = "telegram.Updates"
 	defer func() {
-		err = e.WrapIfErr("can't get updates", err)
-		if err != nil {
-			log.Error(err.Error())
-		}
+		err = e.WrapIfErr(op+":can't get updates", err)
 	}()
-	op := "client.telegram.Updates"
-	log = log.With(
-		slog.String("op", op),
-	)
-	q := url.Values{}
-	q.Add("offset", strconv.FormatInt(offset, 10))
-	q.Add("limit", strconv.FormatInt(limit, 10))
-	data, err := c.doRequest(log, getUpdatesMethod, q)
+	message := struct {
+		Offset int64 `json:"offset"`
+		Limit  int64 `json:"limit"`
+	}{
+		Offset: offset,
+		Limit:  limit,
+	}
+	data, err := c.doRequest(getUpdatesMethod, message)
 	if err != nil {
 		return nil, err
 	}
@@ -85,27 +71,26 @@ func (c *Client) Updates(log *slog.Logger, offset int64, limit int64) (updates [
 	return res.Result, nil
 }
 
-func (c *Client) doRequest(log *slog.Logger, method string) (data []byte, err error) {
+func (c *Client) doRequest(method string, payload any) (data []byte, err error) {
+	const op = "client.doRequest"
 	defer func() {
-		err = e.WrapIfErr("can't do request", err)
-		if err != nil {
-			log.Error(err.Error())
-		}
+		err = e.WrapIfErr(op+":can't do request", err)
 	}()
-	op := "client.telegram.DoRequest"
-	log = log.With(
-		slog.String("op", op),
-	)
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
 	u := url.URL{
 		Scheme: "https",
 		Host:   c.host,
 		Path:   path.Join(c.basePath + method),
 	}
-	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
-	req.URL.RawQuery = query.Encode()
+	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Accept", "application/json")
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -117,6 +102,5 @@ func (c *Client) doRequest(log *slog.Logger, method string) (data []byte, err er
 	if err != nil {
 		return nil, err
 	}
-	log.Info("Request completed", "status", resp.StatusCode)
 	return body, nil
 }

@@ -1,4 +1,4 @@
-module github.com/timeb30/techstreamshop/pgk/kafkaclient
+module github.com/timeb30/techstreamshop/pkg/kafkaclient
 
 go 1.25.3
 

@@ -1,10 +1,15 @@
-package cmd
+package main
 
 import (
-	"github.com/timeb30/techstreamshop/services/telegram-bot/client/telegram"
 	"log"
 	"log/slog"
 	"os"
+
+	"github.com/timeb30/techstreamshop/pkg/kafkaclient"
+	"github.com/timeb30/techstreamshop/services/telegram-bot/client/telegram"
+	processor "github.com/timeb30/techstreamshop/services/telegram-bot/events/telegram"
+	"github.com/timeb30/techstreamshop/services/telegram-bot/internal/config"
+	"github.com/timeb30/techstreamshop/services/telegram-bot/internal/storage/postgresql"
 )
 
 const (
@@ -13,15 +18,30 @@ const (
 	envProd  = "prod"
 )
 
-const (
-	tgBotHost = "api.telegram.org"
-)
-
 func main() {
-	tgClient := telegram.New(tgBotHost, MustToken())
-	tgClient.Updates()
+	cnfg := config.MustLoad()
+	tgClient := telegram.New(cnfg.TgBotHost, MustToken())
+	storage, err := postgresql.New(cnfg.PostgresqlUri)
+	if err != nil {
+		log.Fatal(err)
+	}
+	producer, err := kafkaclient.NewProducer(cnfg.KafkaConfig.Producer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	consumer, err := kafkaclient.NewConsumer(cnfg.KafkaConfig.Consumer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	broker, err := processor.NewBroker(producer, consumer)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	Processor := processor.NewProcessor(&tgClient, storage, broker)
+	Poller := processor.NewPoller(Processor, Processor, broker, 32)
+	Poller.Start()
 	//logger := setupLogger()
-	// token = GetToken(token)
 	//tgClient = telegram.New(token)
 	// consumer.Start(fetcher, proccessor)
 	// fetcher

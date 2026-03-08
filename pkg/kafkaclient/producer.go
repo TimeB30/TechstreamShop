@@ -3,6 +3,7 @@ package kafkaclient
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
@@ -10,15 +11,9 @@ type Producer struct {
 	producer *kafka.Producer
 }
 
-func NewProducer(broker string) (*Producer, error) {
-	producer, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers":  broker,
-		"acks":               "all",
-		"retries":            3,
-		"retry.backoff.ms":   1000,
-		"enable.idempotent":  false,
-		"message.timeout.ms": 15000,
-	})
+func NewProducer(config map[string]interface{}) (*Producer, error) {
+	kafkaConfig := getKafkaConfig(config)
+	producer, err := kafka.NewProducer(kafkaConfig)
 	if err != nil {
 		return nil, err
 	}

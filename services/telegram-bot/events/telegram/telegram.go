@@ -15,29 +15,19 @@ var (
 	ErrUnknownMetaType = errors.New("unknown meta type")
 )
 
-type BrokerProducer interface {
-	Produce(topic string, payload any) error
-	Close() int
-}
-
 type Processor struct {
-	tg             *telegram.Client
-	offset         int64
-	storage        storage.Storage
-	logger         *slog.Logger
-	brokerProducer BrokerProducer
-}
-type Meta struct {
-	ChatID   int64
-	UserName string
-	UserID   int64
+	tg      *telegram.Client
+	offset  int64
+	storage storage.Storage
+	logger  *slog.Logger
+	broker  events.Broker
 }
 
-func NewProcessor(client *telegram.Client, storage storage.Storage, brokerProducer BrokerProducer) *Processor {
+func NewProcessor(client *telegram.Client, storage storage.Storage, broker events.Broker) *Processor {
 	return &Processor{
-		tg:             client,
-		storage:        storage,
-		brokerProducer: brokerProducer,
+		tg:      client,
+		storage: storage,
+		broker:  broker,
 	}
 }
 
@@ -68,28 +58,26 @@ func (p *Processor) Process(e events.Event) error {
 	}
 }
 func (p *Processor) processKey(e events.Event) error {
-
-	p.tg.SendMessage()
+	res, ok := e.Meta.(events.KeyMeta)
+	if !ok {
+		return ErrUnknownMetaType
+	}
+	err := p.tg.SendMessage(res.ChatID, e.Text, nil)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func (p *Processor) processMessage(e events.Event) error {
-	meta, err := meta(e)
-	if err != nil {
-		return err
+	res, ok := e.Meta.(events.MessageMeta)
+	if !ok {
+		return ErrUnknownMetaType
 	}
-	err = p.doCmd(e.Text, meta.ChatID, meta.UserID)
+	err := p.doCmd(e.Text, res.ChatID, res.UserID)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-func meta(event events.Event) (Meta, error) {
-	const op = "meta"
-	res, ok := event.Meta.(Meta)
-	if !ok {
-		return Meta{}, e.Wrap(op, ErrUnknownMetaType)
-	}
-	return res, nil
 }
 
 func event(upd telegram.Update) events.Event {
@@ -99,7 +87,7 @@ func event(upd telegram.Update) events.Event {
 		Text: fetchText(upd),
 	}
 	if updType == events.Message {
-		res.Meta = Meta{
+		res.Meta = events.MessageMeta{
 			ChatID:   upd.Message.Chat.ChatID,
 			UserName: upd.Message.From.UserName,
 			UserID:   upd.Message.From.UserID,

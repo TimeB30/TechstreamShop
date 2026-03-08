@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/timeb30/techstreamshop/pkg/kafkaclient"
 	"github.com/timeb30/techstreamshop/services/telegram-bot/events"
 )
 
@@ -18,21 +18,22 @@ type KeysMessage struct {
 	Key    string `json:"key"`
 }
 
-type BrokerConsumer interface {
-	Consume() (*kafka.Message, error)
-	Subscribe(topic string) error
-}
-type BrokerEventAdapter struct {
-	inner BrokerConsumer
+type KafkaBroker struct {
+	producer *kafkaclient.Producer
+	consumer *kafkaclient.Consumer
 }
 
-func NewBrokerEventAdapter(inner BrokerConsumer) *BrokerEventAdapter {
-	return &BrokerEventAdapter{
-		inner: inner,
-	}
+func NewBroker(prod *kafkaclient.Producer, cons *kafkaclient.Consumer) (*KafkaBroker, error) {
+	return &KafkaBroker{
+		producer: prod,
+		consumer: cons,
+	}, nil
 }
-func (b *BrokerEventAdapter) Consume() (*events.Event, error) {
-	msg, err := b.inner.Consume()
+func (b *KafkaBroker) Produce(topic string, payload any) error {
+	return b.producer.Produce(topic, payload)
+}
+func (b *KafkaBroker) Consume() (*events.Event, error) {
+	msg, err := b.consumer.Consume()
 	if err != nil {
 		return nil, err
 	}
@@ -55,4 +56,8 @@ func (b *BrokerEventAdapter) Consume() (*events.Event, error) {
 	default:
 		return nil, fmt.Errorf("Unknown message type")
 	}
+}
+
+func (b *KafkaBroker) Close() (int, error) {
+	return b.producer.Close(), b.consumer.Close()
 }

@@ -7,27 +7,24 @@ import (
 	"github.com/timeb30/techstreamshop/services/telegram-bot/events"
 )
 
-type BrokerListener interface {
-	Consume() (*events.Event, error)
-	Subscribe(topic string) error
-}
 type Poller struct {
-	fetcher        events.Fetcher
-	processor      events.Processor
-	BrokerListener BrokerListener
-	batchSize      int64
+	fetcher   events.Fetcher
+	processor events.Processor
+	broker    events.Broker
+	batchSize int64
 }
 
-func NewPoller(fetcher events.Fetcher, processor events.Processor, batchSize int64) *Poller {
+func NewPoller(fetcher events.Fetcher, processor events.Processor, broker events.Broker, batchSize int64) *Poller {
 	return &Poller{
 		fetcher:   fetcher,
 		processor: processor,
+		broker:    broker,
 		batchSize: batchSize,
 	}
 }
-func (p *Poller) startListener() {
+func (p *Poller) startConsumer() {
 	for {
-		event, err := p.BrokerListener.Consume()
+		event, err := p.broker.Consume()
 		if err != nil {
 			log.Println(err)
 		}
@@ -38,7 +35,7 @@ func (p *Poller) startListener() {
 	}
 }
 
-func (p *Poller) Start(timeOut time.Duration) {
+func (p *Poller) StartFetcher(timeOut time.Duration) {
 	for {
 		gotEvents, err := p.fetcher.Fetch(p.batchSize)
 		if err != nil {
@@ -54,7 +51,10 @@ func (p *Poller) Start(timeOut time.Duration) {
 		}()
 	}
 }
-
+func (p *Poller) Start() {
+	go p.startConsumer()
+	p.StartFetcher(10 * time.Second)
+}
 func (p *Poller) HandleEvents(e []events.Event) {
 	for _, ev := range e {
 		if err := p.processor.Process(ev); err != nil {

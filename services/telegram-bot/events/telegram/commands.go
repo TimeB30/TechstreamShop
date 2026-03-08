@@ -22,7 +22,7 @@ func (p *Processor) doCmd(text string, chatID int64, userID int64) error {
 		}
 	default:
 		if len(text) == 32 {
-			err := p.brokerProducer.Produce(OrdersTopic, struct {
+			err := p.broker.Produce(OrdersTopic, struct {
 				Key        string `json:"key"`
 				UserID     int64  `json:"user_id"`
 				SoftwareID string `json:"software_id"`
@@ -34,7 +34,7 @@ func (p *Processor) doCmd(text string, chatID int64, userID int64) error {
 				return err
 			}
 		}
-		err := p.tg.SendMessage(chatID, "Software ID should be 32 symbols", nil)
+		err := p.tg.SendMessage(chatID, unknownCommand, nil)
 		if err != nil {
 			return err
 		}

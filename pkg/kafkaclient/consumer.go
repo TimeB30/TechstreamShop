@@ -10,11 +10,9 @@ type Consumer struct {
 	consumer *kafka.Consumer
 }
 
-func NewConsumer(broker string) (*Consumer, error) {
-	cons, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"boostrap.servers":  broker,
-		"auto.offset.reset": "earliest",
-	})
+func NewConsumer(config map[string]interface{}) (*Consumer, error) {
+	kafkaConfig := getKafkaConfig(config)
+	cons, err := kafka.NewConsumer(kafkaConfig)
 	if err != nil {
 		return nil, err
 	}

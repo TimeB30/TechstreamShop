@@ -33,5 +33,6 @@ func MustLoad() *Config {
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		log.Fatalf("Error parsing config file: %s", err)
 	}
+	config.PostgresqlUri = os.ExpandEnv(config.PostgresqlUri)
 	return &config
 }

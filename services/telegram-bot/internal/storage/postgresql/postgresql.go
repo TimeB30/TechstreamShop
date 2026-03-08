@@ -5,6 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/timeb30/techstreamshop/services/telegram-bot/internal/storage"
+	"github.com/timeb30/techstreamshop/services/telegram-bot/lib/e"
 )
 
 type Storage struct {
@@ -15,7 +16,7 @@ func New(storagePath string) (*Storage, error) {
 	const op = "storage.postgresql.new"
 	db, err := pgxpool.New(context.Background(), storagePath)
 	if err != nil {
-		return nil, err
+		return nil, e.Wrap(op, err)
 	}
 	return &Storage{
 		db: db,

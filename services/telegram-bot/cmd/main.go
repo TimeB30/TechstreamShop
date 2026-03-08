@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -25,6 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(cnfg)
 	producer, err := kafkaclient.NewProducer(cnfg.KafkaConfig.Producer)
 	if err != nil {
 		log.Fatal(err)

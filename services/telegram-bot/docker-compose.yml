@@ -39,11 +39,11 @@ services:
     env_file:
       - .env
     environment:
-      - CONFIG_PATH = /root/local.yaml
+      - CONFIG_PATH=/root/local.yaml
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - liquibase
 volumes:
   pgdata:
 

@@ -291,8 +291,8 @@ github.com/theupdateframework/notary v0.7.0 h1:QyagRZ7wlSpjT5N2qQAh/pN+DVqgekv4D
 github.com/theupdateframework/notary v0.7.0/go.mod h1:c9DRxcmhHmVLDay4/2fUYdISnHqbFDGRSlXPO0AhYWw=
 github.com/tilt-dev/fsnotify v1.4.8-0.20220602155310-fff9c274a375 h1:QB54BJwA6x8QU9nHY3xJSZR2kX9bgpZekRKGkLTmEXA=
 github.com/tilt-dev/fsnotify v1.4.8-0.20220602155310-fff9c274a375/go.mod h1:xRroudyp5iVtxKqZCrA6n2TLFRBf8bmnjr1UD4x+z7g=
-github.com/timeb30/techstreamshop/pkg/kafkaclient v0.0.0-20260308115300-6a25b6dda12a h1:psls8s91UYGRQFXeKj0nXXJxr9DkhqiDWYRwZ1p2rNo=
-github.com/timeb30/techstreamshop/pkg/kafkaclient v0.0.0-20260308115300-6a25b6dda12a/go.mod h1:2eON5eeiG0MHnG/foV19Bpc7pgamQyRiEVATn/lNsxo=
+github.com/timeb30/techstreamshop/pkg/kafkaclient v1.0.0 h1:ST8kgqBWGZtk+LrEKPC8rTKB/1YsRjSm4hee+3iRAjA=
+github.com/timeb30/techstreamshop/pkg/kafkaclient v1.0.0/go.mod h1:2eON5eeiG0MHnG/foV19Bpc7pgamQyRiEVATn/lNsxo=
 github.com/tklauser/go-sysconf v0.3.12 h1:0QaGUFOdQaIVdPgfITYzaTegZvdCjmYO52cSFAEVmqU=
 github.com/tklauser/go-sysconf v0.3.12/go.mod h1:Ho14jnntGE1fpdOqQEEaiKRpvIavV0hSfmBq8nJbHYI=
 github.com/tklauser/numcpus v0.6.1 h1:ng9scYS7az0Bk4OZLvrNXNSAO2Pxr1XXRAPyjhIx+Fk=

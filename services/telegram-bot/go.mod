@@ -7,7 +7,7 @@ go 1.25.3
 require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/timeb30/techstreamshop/pkg/kafkaclient v0.0.0-20260308115300-6a25b6dda12a
+	github.com/timeb30/techstreamshop/pkg/kafkaclient v1.0.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

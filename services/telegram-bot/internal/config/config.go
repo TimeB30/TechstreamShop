@@ -1,19 +1,20 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
+	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"os"
 )
 
 type KafkaConfig struct {
-	Producer map[string]interface{} `yaml:"producer"`
-	Consumer map[string]interface{} `yaml:"consumer"`
+	Topics   []string               `yaml:"topics" env-required`
+	Producer map[string]interface{} `yaml:"producer" env-required`
+	Consumer map[string]interface{} `yaml:"consumer" env-required`
 }
 type Config struct {
-	Env           string      `yaml:"env"`
-	PostgresqlUri string      `yaml:"postgresql_uri"`
-	TgBotHost     string      `yaml:"tg_bot_host"`
+	Env           string      `yaml:"env" env-required`
+	PostgresqlUri string      `yaml:"postgresql_uri" env-required`
+	TgBotHost     string      `yaml:"tg_bot_host" env-required`
 	KafkaConfig   KafkaConfig `yaml:"kafka"`
 }
 
@@ -25,12 +26,10 @@ func MustLoad() *Config {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.Fatalf("Error config file does not exist on: %s", configPath)
 	}
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		log.Fatalf("Error reading config file: %s", err)
-	}
+
 	var config Config
-	if err := yaml.Unmarshal(data, &config); err != nil {
+
+	if err := cleanenv.ReadConfig(configPath, &config); err != nil {
 		log.Fatalf("Error parsing config file: %s", err)
 	}
 	config.PostgresqlUri = os.ExpandEnv(config.PostgresqlUri)

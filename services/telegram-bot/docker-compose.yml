@@ -8,7 +8,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
+    networks:
+      - techstream-common-net
     ports:
       - "5431:5432"
 
@@ -25,6 +26,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - techstream-common-net
     volumes:
       - ./migrations:/liquibase/changelog:ro
     environment:
@@ -40,10 +43,17 @@ services:
       - .env
     environment:
       - CONFIG_PATH=/root/local.yaml
+    networks:
+      - techstream-common-net
     ports:
       - "8080:8080"
     depends_on:
-      - liquibase
+      liquibase:
+        condition: service_completed_successfully
 volumes:
   pgdata:
 
+
+networks:
+  techstream-common-net:
+    external: true

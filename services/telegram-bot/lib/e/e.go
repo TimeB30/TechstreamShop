@@ -3,7 +3,7 @@ package e
 import "fmt"
 
 func Wrap(msg string, err error) error {
-	return fmt.Errorf("can't do request %w", err)
+	return fmt.Errorf(msg+": %w", err)
 }
 
 func WrapIfErr(msg string, err error) error {

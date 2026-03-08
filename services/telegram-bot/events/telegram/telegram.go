@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/timeb30/techstreamshop/services/telegram-bot/client/telegram"
@@ -37,6 +38,7 @@ func (p *Processor) Fetch(limit int64) ([]events.Event, error) {
 		return nil, e.Wrap("can't get updates", err)
 	}
 	if len(updates) == 0 {
+		fmt.Println("No updates")
 		return nil, nil
 	}
 	res := make([]events.Event, 0, len(updates))

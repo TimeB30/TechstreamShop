@@ -83,7 +83,7 @@ func (c *Client) doRequest(method string, payload any) (data []byte, err error) 
 	u := url.URL{
 		Scheme: "https",
 		Host:   c.host,
-		Path:   path.Join(c.basePath + method),
+		Path:   path.Join(c.basePath, method),
 	}
 	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(jsonData))
 	if err != nil {

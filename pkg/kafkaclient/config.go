@@ -7,5 +7,6 @@ func getKafkaConfig(config map[string]interface{}) *kafka.ConfigMap {
 	for key, value := range config {
 		kafkaConfig[key] = value
 	}
+
 	return &kafkaConfig
 }

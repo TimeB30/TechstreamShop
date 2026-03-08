@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -27,18 +28,20 @@ func (p *Processor) doCmd(text string, chatID int64, userID int64) error {
 				UserID     int64  `json:"user_id"`
 				SoftwareID string `json:"software_id"`
 			}{
-				Key:    uuid.New().String(),
-				UserID: userID,
+				Key:        uuid.New().String(),
+				UserID:     userID,
+				SoftwareID: text,
 			})
 			if err != nil {
 				return err
 			}
+		} else {
+			err := p.tg.SendMessage(chatID, unknownCommand, nil)
+			if err != nil {
+				return err
+			}
+			return fmt.Errorf("Software ID should be 32 symbols")
 		}
-		err := p.tg.SendMessage(chatID, unknownCommand, nil)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("Software ID should be 32 symbols")
 	}
 	return nil
 }

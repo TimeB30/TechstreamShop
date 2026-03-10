@@ -60,7 +60,7 @@ func (p *Poller) StartFetcher(timeOut time.Duration) {
 func (p *Poller) Start() {
 	go p.startConsumer()
 	fmt.Println("Consumer started")
-	p.StartFetcher(3 * time.Second)
+	p.StartFetcher(time.Second)
 }
 func (p *Poller) HandleEvents(e []events.Event) {
 	for _, ev := range e {

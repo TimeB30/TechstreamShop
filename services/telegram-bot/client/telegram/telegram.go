@@ -3,6 +3,7 @@ package telegram
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,8 +19,11 @@ type Client struct {
 }
 
 const (
-	getUpdatesMethod  = "getUpdates"
-	sendMessageMethod = "sendMessage"
+	getUpdatesMethod             = "getUpdates"
+	sendMessageMethod            = "sendMessage"
+	answerCallbackQueryMethod    = "answerCallbackQuery"
+	editMessageReplyMarkupMethod = "editMessageReplyMarkup"
+	deleteMessageMethod          = "deleteMessage"
 )
 
 func New(host string, token string) Client {
@@ -34,12 +38,12 @@ func newBasePath(token string) string {
 	return "bot" + token
 }
 
-func (c *Client) SendMessage(chatID int64, message string, inlineKeyboardMarkup InlineKeyboardMarkup) error {
+func (c *Client) SendMessage(chatID int64, message string, replyMarkup *ReplyMarkup) error {
 	op := "client.SendMessage"
 	reqBody := Message{
-		ChatID:               chatID,
-		Text:                 message,
-		InlineKeyboardMarkUp: inlineKeyboardMarkup,
+		ChatID:      chatID,
+		Text:        message,
+		ReplyMarkup: replyMarkup,
 	}
 	_, err := c.doRequest(sendMessageMethod, reqBody)
 	if err != nil {
@@ -69,6 +73,30 @@ func (c *Client) Updates(offset int64, limit int64) (updates []Update, err error
 		return nil, err
 	}
 	return res.Result, nil
+}
+
+func (c *Client) AnswerCallBackQuery(callBackQueryID, text string) {
+	_, _ = c.doRequest(answerCallbackQueryMethod, CallBackQueryAnswer{
+		CallBackQueryID: callBackQueryID,
+		Text:            text,
+	})
+}
+
+func (c *Client) EditMessageReplyMarkup(messageID int64, chatID int64, markup *ReplyMarkup) (bool, error) {
+	data, err := c.doRequest(editMessageReplyMarkupMethod, EditMessageReplyMarkup{
+		ChatID:      chatID,
+		MessageID:   messageID,
+		ReplyMarkup: markup,
+	})
+	if err != nil {
+		return false, err
+	}
+	var res EditResponse
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return false, err
+	}
+	return res.OK, nil
 }
 
 func (c *Client) doRequest(method string, payload any) (data []byte, err error) {
@@ -102,5 +130,24 @@ func (c *Client) doRequest(method string, payload any) (data []byte, err error) 
 	if err != nil {
 		return nil, err
 	}
+	var res TempUpdate
+	if err := json.Unmarshal(body, &res); err != nil {
+		return nil, err
+	}
+	if !res.OK {
+		fmt.Println("updateResponse is not ok", res.Description)
+
+	}
 	return body, nil
+}
+
+func (c *Client) DeleteMessage(chatID int64, messageID int64) error {
+	_, err := c.doRequest(deleteMessageMethod, struct {
+		ChatID    int64 `json:"chat_id"`
+		MessageID int64 `json:"message_id"`
+	}{
+		ChatID:    chatID,
+		MessageID: messageID,
+	})
+	return err
 }

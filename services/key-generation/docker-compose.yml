@@ -2,6 +2,8 @@ services:
   postgres:
     image: postgres:16
     container_name: techstream_keys_postgres
+    networks:
+      - techstream-common-net
     restart: unless-stopped
 
     environment:
@@ -22,18 +24,43 @@ services:
   liquibase:
     image: liquibase/liquibase:4.27
     container_name: techstream_keys_liquibase
+    networks:
+      - techstream-common-net
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./migrations:/liquibase/changelog:ro
     environment:
-      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       LIQUIBASE_COMMAND_USERNAME: ${POSTGRES_USER}
       LIQUIBASE_COMMAND_PASSWORD: ${POSTGRES_PASSWORD}
       LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.yaml
     command: ["update"]
     restart: "no"
+  keygen:
+    container_name: techstream_keys_keygen
+    build: .
+    env_file:
+      - .env
+    environment:
+      - CONFIG_PATH=/root/local.yaml
+    networks:
+      - techstream-common-net
+    ports:
+      - "8080:8080"
+    depends_on:
+      liquibase:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
 volumes:
   pgdata:
 
+
+
+networks:
+  techstream-common-net:
+    external: true

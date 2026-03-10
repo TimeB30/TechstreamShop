@@ -1,38 +1,36 @@
 package config
 
 import (
+	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"os"
-
-	"time"
-
-	"github.com/ilyakaznacheev/cleanenv"
 )
 
-type Config struct {
-	Env        string `yaml:"env" env:"ENV" env-default:"local" env-required:"true"`
-	StorageURL string `yaml:"storage_url" env-required:"true"`
-	HTTPServer `yaml:"http_server"`
+type KafkaConfig struct {
+	Topics   []string               `yaml:"topics" env-required`
+	Producer map[string]interface{} `yaml:"producer" env-required`
+	Consumer map[string]interface{} `yaml:"consumer" env-required`
 }
-
-type HTTPServer struct {
-	Address     string        `yaml:"address" env-default:"localhost:8080"`
-	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
-	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+type Config struct {
+	Env           string      `yaml:"env" env-required`
+	PostgresqlUri string      `yaml:"postgresql_uri" env-required`
+	KafkaConfig   KafkaConfig `yaml:"kafka"`
 }
 
 func MustLoad() *Config {
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		log.Fatal("CONFIG_PATH is not set")
+		log.Fatalf("Error gettinng config path\n")
 	}
-	// check if file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", configPath)
+		log.Fatalf("Error config file does not exist on: %s", configPath)
 	}
-	var cfg Config
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("cannot read config: %s", err)
+
+	var config Config
+
+	if err := cleanenv.ReadConfig(configPath, &config); err != nil {
+		log.Fatalf("Error parsing config file: %s", err)
 	}
-	return &cfg
+	config.PostgresqlUri = os.ExpandEnv(config.PostgresqlUri)
+	return &config
 }

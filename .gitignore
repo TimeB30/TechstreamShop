@@ -2,9 +2,10 @@
 *.env
 *.yaml
 *.yml
-
+*.venv
 
 !services/key-generation/migrations
 !services/key-generation/docker-compose.yml
 !services/telegram-bot/migrations
 !services/telegram-bot/docker-compose.yml
+!services/kafka/docker-compose.yml

@@ -31,7 +31,7 @@ services:
     volumes:
       - ./migrations:/liquibase/changelog:ro
     environment:
-      LIQUIBASE_COMMAND_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       LIQUIBASE_COMMAND_USERNAME: ${POSTGRES_USER}
       LIQUIBASE_COMMAND_PASSWORD: ${POSTGRES_PASSWORD}
       LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.yaml
@@ -46,7 +46,7 @@ services:
     networks:
       - techstream-common-net
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       liquibase:
         condition: service_completed_successfully

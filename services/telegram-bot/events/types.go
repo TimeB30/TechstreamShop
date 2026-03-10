@@ -18,6 +18,7 @@ const (
 	Unknown Type = iota
 	Message
 	Key
+	CallBackQuery
 )
 
 type Event struct {
@@ -30,8 +31,10 @@ type MessageMeta struct {
 	ChatID   int64
 	UserName string
 }
-
-type KeyMeta struct {
-	UserID int64
-	ChatID int64
+type CallBackQueryMeta struct {
+	UserID          int64
+	ChatID          int64
+	CallbackQueryID string
+	Data            string
+	MessageID       int64
 }

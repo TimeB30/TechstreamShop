@@ -28,6 +28,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = consumer.Subscribe(cnfg.KafkaConfig.Topics[0])
+	fmt.Println("Subscribed to", cnfg.KafkaConfig.Topics[0])
+	if err != nil {
+		log.Fatal(err)
+	}
 	brkr, err := kafkabroker.NewBroker(producer, consumer)
 	if err != nil {
 		log.Fatal(err)
@@ -36,7 +41,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	kg := keygen.NewKeyGen()
+	kg := keygen.NewKeyGen("http://host.docker.internal:8000", nil)
 	procsr := processor.NewProcessor(brkr, *kg, *storage)
 	procsr.Start()
 	log.Fatal("Processor stop unexpectedly")

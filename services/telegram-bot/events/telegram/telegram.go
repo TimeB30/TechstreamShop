@@ -55,16 +55,26 @@ func (p *Processor) Process(e events.Event) error {
 		return p.processMessage(e)
 	case events.Key:
 		return p.processKey(e)
+	case events.CallBackQuery:
+		return p.processQuery(e)
 	default:
 		return ErrUnknownEvent
 	}
 }
+func (p *Processor) processQuery(e events.Event) error {
+	res, ok := e.Meta.(events.CallBackQueryMeta)
+	if !ok || res.Data == "" {
+		return ErrUnknownMetaType
+	}
+	return p.doQuery(res.CallbackQueryID, res.ChatID, res.UserID, res.MessageID, res.Data)
+}
 func (p *Processor) processKey(e events.Event) error {
-	res, ok := e.Meta.(events.KeyMeta)
+	res, ok := e.Meta.(KeysMessage)
 	if !ok {
 		return ErrUnknownMetaType
 	}
-	err := p.tg.SendMessage(res.ChatID, e.Text, nil)
+	msg := fmt.Sprintf("%s\n%s\nВерсия: %s\nСрок действия(дни): %d", res.OrderMessage.SoftwareID, e.Text, SoftwareVersions[res.OrderMessage.Version], res.OrderMessage.Duration)
+	err := p.tg.SendMessage(res.OrderMessage.ChatID, msg, nil)
 	if err != nil {
 		return err
 	}
@@ -88,13 +98,25 @@ func event(upd telegram.Update) events.Event {
 		Type: updType,
 		Text: fetchText(upd),
 	}
-	if updType == events.Message {
+	switch updType {
+	case events.Message:
 		res.Meta = events.MessageMeta{
 			ChatID:   upd.Message.Chat.ChatID,
 			UserName: upd.Message.From.UserName,
 			UserID:   upd.Message.From.UserID,
 		}
+	case events.CallBackQuery:
+		res.Meta = events.CallBackQueryMeta{
+			UserID:          upd.CallBackQuery.From.UserID,
+			ChatID:          upd.CallBackQuery.Message.Chat.ChatID,
+			CallbackQueryID: upd.CallBackQuery.ID,
+			MessageID:       upd.CallBackQuery.Message.ID,
+			Data:            upd.CallBackQuery.Data,
+		}
+	default:
+		res.Meta = nil
 	}
+
 	return res
 }
 
@@ -106,6 +128,9 @@ func fetchText(upd telegram.Update) string {
 }
 
 func fetchType(upd telegram.Update) events.Type {
+	if upd.CallBackQuery != nil {
+		return events.CallBackQuery
+	}
 	if upd.Message == nil {
 		return events.Unknown
 	}

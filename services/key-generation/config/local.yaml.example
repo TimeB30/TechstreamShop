@@ -1,6 +1,18 @@
 env: "local" # local, dev, prod
-storage_url: "postgresql://username:password@localhost:5430/db_name"
-http_server:
-  address: "localhost:8082"
-  timeout: "4s"
-  idle_timeout: "60s"
+postgresql_uri: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+kafka:
+  topics:
+    - "orders"
+    - "keys"
+  producer:
+    "bootstrap.servers": "kafka:9092"
+    "acks": "all"
+    "retries": 3
+    "retry.backoff.ms": 1000
+    "delivery.timeout.ms": 15000
+    "enable.idempotence": false
+  consumer:
+    "group.id" : "keygenGroup"
+    "bootstrap.servers": "kafka:9092"
+    "auto.offset.reset": "earliest"
+

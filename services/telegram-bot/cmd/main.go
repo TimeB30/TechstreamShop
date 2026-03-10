@@ -19,6 +19,7 @@ const (
 	envProd  = "prod"
 )
 
+// TODO check keys getting, check hard coded params that can be added to config file
 func main() {
 	cnfg := config.MustLoad()
 	fmt.Println(cnfg)

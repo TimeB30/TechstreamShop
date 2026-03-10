@@ -9,15 +9,23 @@ import (
 )
 
 const (
-	KeysTopic = "keys"
+	KeysTopic   = "keys"
+	OrdersTopic = "orders"
 )
 
 type KeysMessage struct {
-	ChatID int64  `json:"chat_id"`
-	UserID int64  `json:"user_id"`
-	Key    string `json:"key"`
+	OrderMessage *OrderMessage `json:"order_message"`
+	Key          string        `json:"key"`
 }
 
+type OrderMessage struct {
+	UserID     int64  `json:"user_id"`
+	ChatID     int64  `json:"chat_id"`
+	SoftwareID string `json:"software_id"`
+	Version    int64  `json:"version"`  // index
+	Duration   int64  `json:"duration"` //days
+
+}
 type KafkaBroker struct {
 	producer *kafkaclient.Producer
 	consumer *kafkaclient.Consumer
@@ -33,7 +41,7 @@ func (b *KafkaBroker) Produce(topic string, payload any) error {
 	return b.producer.Produce(topic, payload)
 }
 func (b *KafkaBroker) Consume() (*events.Event, error) {
-	msg, err := b.consumer.Consume()
+	msg, err := b.consumer.Consume(5)
 	if err != nil {
 		return nil, err
 	}

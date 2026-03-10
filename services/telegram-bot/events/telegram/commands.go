@@ -2,16 +2,15 @@ package telegram
 
 import (
 	"fmt"
+	"strconv"
 
-	"github.com/google/uuid"
+	"github.com/timeb30/techstreamshop/services/telegram-bot/client/telegram"
+	"github.com/timeb30/techstreamshop/services/telegram-bot/lib/e"
 )
 
 const (
 	HelpCmd  = "/help"
 	StartCmd = "/start"
-)
-const (
-	OrdersTopic = "orders"
 )
 
 func (p *Processor) doCmd(text string, chatID int64, userID int64) error {
@@ -23,18 +22,19 @@ func (p *Processor) doCmd(text string, chatID int64, userID int64) error {
 		}
 	default:
 		if len(text) == 32 {
-			err := p.broker.Produce(OrdersTopic, struct {
-				Key        string `json:"key"`
-				UserID     int64  `json:"user_id"`
-				SoftwareID string `json:"software_id"`
-			}{
-				Key:        uuid.New().String(),
-				UserID:     userID,
-				SoftwareID: text,
-			})
+			var replyMarkup telegram.InlineKeyboardMarkup
+			leftIndex := 0
+			rightIndex := inlineKeyboardMarkupLen - 1
+			replyMarkup, err := p.getKeyboard(leftIndex, rightIndex, SoftwareVersions, replyMarkup, fmt.Sprintf("%s/%s", SetVersionQuery, text))
+			replyMarkup = append(replyMarkup, p.getButton("⬇️", fmt.Sprintf("%s/%s", VersionDownQuery, text), strconv.Itoa(leftIndex), strconv.Itoa(rightIndex)))
+			if err != nil {
+				return e.Wrap("can't attach markup", err)
+			}
+			err = p.tg.SendMessage(chatID, text, &telegram.ReplyMarkup{InlineKeyboardMarkup: replyMarkup})
 			if err != nil {
 				return err
 			}
+
 		} else {
 			err := p.tg.SendMessage(chatID, unknownCommand, nil)
 			if err != nil {

@@ -6,15 +6,26 @@ def set_days(num,ahk):
     win.move(282, 65)
     win.activate()
     ahk.click(766,182,coord_mode="Screen")
-    ahk.key_down("Backspace")
-    ahk.key_down("Backspace")
-    ahk.key_down("Backspace")
-    ahk.key_down("Backspace")
+    ahk.key_press("Backspace")
+    ahk.key_press("Backspace")
+    ahk.key_press("Backspace")
+    ahk.key_press("Backspace")
+    ahk.key_press("Backspace")
     ahk.type(str(num))
-
-
-def get_activator(ahk,text,days=365):
-
+def set_version(index, ahk):
+    win = ahk.win_get(title="Techstream Keygen v3.9")
+    win.move(282, 65)
+    win.activate()
+    ahk.click(500, 182, coord_mode="Screen")
+    for i in range(0, 50):
+        ahk.key_press('Up')
+    for i in range(0, index):
+        ahk.key_press('Down')
+    ahk.key_press('Enter')
+def get_activator(ahk,text,version_index, days=365):
+    return "test key"
+def get_activator2(ahk,text,version_index, days=365):
+    set_version(version_index, ahk)
     set_days(days,ahk)
     # ahk = AHK()
     count = 0
@@ -57,12 +68,3 @@ def get_activator(ahk,text,days=365):
             return result
     return ""
 
-try:
-
-    ahk = AHK()
-
-    softwareID = sys.argv[1]
-    days = int(sys.argv[2])
-    print(get_activator(ahk,softwareID, days))
-except:
-    print("")

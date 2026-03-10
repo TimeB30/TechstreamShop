@@ -23,8 +23,8 @@ func NewConsumer(config map[string]interface{}) (*Consumer, error) {
 func (c *Consumer) Subscribe(topic string) error {
 	return c.consumer.Subscribe(topic, nil)
 }
-func (c *Consumer) Consume() (*kafka.Message, error) {
-	msg, err := c.consumer.ReadMessage(time.Second)
+func (c *Consumer) Consume(timeOutSec int) (*kafka.Message, error) {
+	msg, err := c.consumer.ReadMessage(time.Duration(timeOutSec) * time.Second)
 	if err != nil {
 		return nil, err
 	}

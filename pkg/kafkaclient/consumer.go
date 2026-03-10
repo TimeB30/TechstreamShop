@@ -28,6 +28,7 @@ func (c *Consumer) Consume(timeOutSec int) (*kafka.Message, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return msg, nil
 }
 func (c *Consumer) Close() error {
